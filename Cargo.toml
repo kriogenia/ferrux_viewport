@@ -30,3 +30,8 @@ num-traits = "0.2.14"
 pixels = "0.9"
 thiserror = "1.0.30"
 winit = "0.26"
+
+[workspace]
+members = [
+	"examples/*"
+]

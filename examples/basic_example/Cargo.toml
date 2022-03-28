@@ -1,0 +1,10 @@
+[package]
+name = "basic_example"
+version = "0.1.0"
+authors = ["Ricardo Soto Estévez <ricardo@sotoestevez.dev>"]
+edition = "2021"
+publish = false
+
+[dependencies]
+ferrux_viewport = { path = "../.." }
+winit = "0.26"
