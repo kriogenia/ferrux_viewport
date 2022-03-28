@@ -1,0 +1,32 @@
+[package]
+name = "ferrux_viewport"
+description = "Abstraction tool to ease the drawing on a given viewport"
+version = "0.1.0"
+authors = ["Soto Estévez <ricardo@sotoestevez.dev>"]
+edition = "2021"
+readme = "./README.md"
+homepage = "https://crates.io/crates/ferrux_viewport"
+repository = "https://github.com/kriogenia/ferrux_viewport"
+documentation = "https://docs.rs/ferrux_viewport/latest"
+license = "MIT OR Apache-2.0"
+keywords = [ "canvas", "pixels", "graphics", "2D", "3D" ]
+categories = [ "graphics", "rendering" ]
+include = [
+    "/Cargo.*",
+    "/LICENSE-*",
+    "/README.md",
+    "/src/**/*",
+]
+
+[features]
+optimize = ["log/release_max_level_warn"]
+default = ["optimize"]
+
+[dependencies]
+env_logger = "0.9"
+line_drawing = "1.0.0"
+log = "0.4"
+num-traits = "0.2.14"
+pixels = "0.9"
+thiserror = "1.0.30"
+winit = "0.26"
