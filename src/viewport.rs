@@ -1,12 +1,14 @@
+use crate::pixel::Pixel;
 use crate::{Color, PixelSize, Position};
 use crate::error::ViewportError;
 
-pub struct Viewport<S: PixelSize> {
+pub struct Viewport<'a, S: PixelSize> {
 	width: S,
-	height: S
+	height: S,
+	buffer: Vec<Pixel<'a>>
 }
 
-impl<S: PixelSize> Viewport<S> {
+impl<'a, S: PixelSize> Viewport<'a, S> {
 
 	/// Builds a new Viewport to use.
 	/// 
@@ -20,8 +22,14 @@ impl<S: PixelSize> Viewport<S> {
 	/// ```
 	/// 
 	pub fn new(width: S, height: S) -> Self {
-		// TODO build buffer and store window
-		Viewport { width, height }
+		// TODO store window
+		let buffer_size = usize::cast(width * height);
+		dbg!(buffer_size);
+		Viewport { 
+			width, 
+			height, 
+			buffer: Vec::with_capacity(buffer_size)
+		}
 	}
 
 	/// Returns the width of the current window
@@ -43,7 +51,7 @@ impl<S: PixelSize> Viewport<S> {
 	pub fn resize(&mut self, width: S, height: S) {
 		self.width = width;
 		self.height = height;
-		// TODO resize buffer
+		// TODO resize buffer -> new and copy
 	}
 
 	/// TODO	
@@ -57,9 +65,20 @@ impl<S: PixelSize> Viewport<S> {
 	}
 
 	///TODO
-	pub fn draw_point(&mut self, position: Position, color: Color) {
+	pub fn draw_point(&mut self, (x, y, z): Position, color: &'a [u8]) {
 		assert_eq!(4, color.len());
-		println!("Draw in pixel {position:?} with color {color:?}");
+		//dbg!(x, y, z);
+		
+		// Extract function and make better as the range is [-1.0, 1.0] for both axis
+		//let width = (usize::cast(self.width) as f32 * x) as usize;
+		//let height = (usize::cast(self.height) as f32 * y) as usize;
+		//let pos = height * usize::cast(self.width) + width;
+		//dbg!(width, height, pos);
+
+		self.buffer.push(Pixel {
+			color,
+			depth: z		
+		});
 	}
 	
 	/// TODO

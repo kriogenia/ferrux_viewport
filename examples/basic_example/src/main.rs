@@ -5,5 +5,5 @@ fn main() {
 	assert_eq!(640, viewport.width());
 	assert_eq!(480, viewport.height());
 	let color = [RGBA8::new(255, 0, 0, 255)];
-	viewport.draw_point((0.2, 0.3, 1.0), color.as_bytes());
+	viewport.draw_point((0.5, 0.5, 1.0), color.as_bytes());
 }
