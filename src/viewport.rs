@@ -1,12 +1,9 @@
-use crate::{PixelSize, Position, Coordinate};
+use crate::{Color, PixelSize, Position};
 use crate::error::ViewportError;
-
-// temporary
-type Color<'a> = &'a [u8; 4];
 
 pub struct Viewport<S: PixelSize> {
 	width: S,
-	height: S,
+	height: S
 }
 
 impl<S: PixelSize> Viewport<S> {
@@ -60,16 +57,19 @@ impl<S: PixelSize> Viewport<S> {
 	}
 
 	///TODO
-	pub fn draw_point<P: Coordinate>(&mut self, position: Position<P>, color: Color) {}
+	pub fn draw_point(&mut self, position: Position, color: Color) {
+		assert_eq!(4, color.len());
+		println!("Draw in pixel {position:?} with color {color:?}");
+	}
 	
 	/// TODO
-	pub fn draw_line<P: Coordinate>(&mut self, start: Position<P>, end: Position<P>, color: Color) {}
+	pub fn draw_line(&mut self, start: Position, end: Position, color: Color) {}
 	
 	///TODO
-	pub fn draw_triangle<P: Coordinate>(&mut self, point_a: Position<P>, point_b: Position<P>, point_c: Position<P>, color: Color) {}
+	pub fn draw_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: Color) {}
 	
 	///TODO
-	pub fn fill_triangle<P: Coordinate>(&mut self, point_a: Position<P>, point_b: Position<P>, point_c: Position<P>, color: Color) {}
+	pub fn fill_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: Color) {}
 	
 	///TODO
 	pub fn reset(&mut self) {}

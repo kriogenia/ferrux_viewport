@@ -6,12 +6,11 @@ extern crate winit;
 pub mod viewport;
 mod error;
 
-use num_traits::{Float, NumAssignOps, NumOps, Signed, Unsigned};
+use num_traits::{NumAssignOps, NumOps, Unsigned};
 
-pub trait Coordinate: Float + Signed + NumOps + Copy + Ord {}
-impl<T: Float + Signed + NumOps + Copy + Ord> Coordinate for T {}
-
-pub struct Position<T: Coordinate> (T, T, T);
+type Position = (f32, f32, f32);
 
 pub trait PixelSize: Unsigned + NumAssignOps + NumOps + Copy + Ord  {}
 impl<T: Unsigned + NumAssignOps + NumOps + Copy + Ord> PixelSize for T {}
+
+type Color<'a> = &'a [u8];

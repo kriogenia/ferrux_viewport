@@ -7,4 +7,5 @@ publish = false
 
 [dependencies]
 ferrux_viewport = { path = "../.." }
+rgb = "0.8.32"
 winit = "0.26"
