@@ -1,6 +1,4 @@
-use crate::Position;
-
-type Voxel = (usize, usize, usize);
+use crate::{Position, Voxel};
 
 const DEPTH: f32 = 10_000.0;
 

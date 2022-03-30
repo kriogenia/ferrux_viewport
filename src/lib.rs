@@ -70,12 +70,14 @@ use num_traits::{NumAssignOps, NumOps, Unsigned, NumCast};
 #[allow(clippy::pedantic)]
 extern crate winit;
 
+pub mod render;
 pub mod viewport;
 mod error;
 mod pixel;
 mod util;
 
 type Position = (f32, f32, f32);
+type Voxel = (usize, usize, usize);
 
 /// Trait to englobe unsigned integers to use as PixelSize in the Viewport construcion
 pub trait PixelSize: Unsigned + NumAssignOps + NumOps + NumCast + Copy + Ord  {
