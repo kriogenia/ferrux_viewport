@@ -90,7 +90,7 @@ impl<'a, S: PixelSize> Viewport<'a, S> {
 	/// If thow points fall on the same pixel, the point with the lowest `z` will be ignored.
 	/// 
 	/// # Arguments
-	/// * `(x, y, z)`, coordinates of the point in `f32`.
+	/// * `position`, coordinates of the point in `(f32, f32, f32)`.
 	/// * `color`, color of the point to draw. It should be provided as raw RGB values, alpha is included,
 	/// so the expectation is a &[u8; 4] color like `&[255, 0, 0, 255]` for red with 100% opacity.
 	/// 
@@ -101,15 +101,22 @@ impl<'a, S: PixelSize> Viewport<'a, S> {
 	/// viewport.draw_point((0.0, 0.0, 0.0), &[255, 255, 255, 255]); // white point in the center of the screen
 	/// viewport.render(); // renders the point in the window
 	/// ```
+	/// 
+	/// # Panic
+	/// The position coordinates must be restricted to the range [-1.0, 1.0), otherwise a panic will be thrown.
+	/// 
 	pub fn draw_point(&mut self, position: Position, color: &'a [u8]) {
 		assert_eq!(4, color.len());
-		
-		// TODO check bounds
+		assert!((-1.0..1.0).contains(&position.0));
+		assert!((-1.0..1.0).contains(&position.1));
+		assert!((-1.0..1.0).contains(&position.2));
+
 		let (i, z) = {
 			let usize_width = usize::cast(self.width);
 			let (x, y, z) = to_pixel(position, usize_width, usize::cast(self.height));
 			(buffer_index(x, y, usize_width), z)
 		};
+
 		// TODO check depth with the current one
 		self.buffer[i] = Pixel {
 			color,
@@ -149,6 +156,13 @@ mod test {
 		assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 }); 
 		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 5000 }); 
 		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 6250 }); 
+	}
+
+	#[test]
+	#[should_panic]
+	fn invalid_draw_point() {
+		let mut viewport = Viewport::new(640 as u32, 480 as u32);
+		viewport.draw_point((-2.0, 0.0, 0.0), &[0, 0, 0, 0]);
 	}
 
 }
