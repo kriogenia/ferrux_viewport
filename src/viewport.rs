@@ -103,13 +103,13 @@ impl<'a, S: PixelSize> Viewport<'a, S> {
 	/// ```
 	/// 
 	/// # Panic
-	/// The position coordinates must be restricted to the range [-1.0, 1.0), otherwise a panic will be thrown.
+	/// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
 	/// 
 	pub fn draw_point(&mut self, position: Position, color: &'a [u8]) {
 		assert_eq!(4, color.len());
-		assert!((-1.0..1.0).contains(&position.0));
-		assert!((-1.0..1.0).contains(&position.1));
-		assert!((-1.0..1.0).contains(&position.2));
+		if !(-1.0..1.0).contains(&position.0) || !(-1.0..1.0).contains(&position.1) || !(-1.0..1.0).contains(&position.2) {
+			return;
+		};
 
 		let (i, z) = {
 			let usize_width = usize::cast(self.width);
@@ -117,11 +117,12 @@ impl<'a, S: PixelSize> Viewport<'a, S> {
 			(buffer_index(x, y, usize_width), z)
 		};
 
-		// TODO check depth with the current one
-		self.buffer[i] = Pixel {
-			color,
-			depth: z		
-		};
+		if z >= self.buffer[i].depth {
+			self.buffer[i] = Pixel {
+				color,
+				depth: z		
+			};
+		}
 	}
 	
 	/// TODO
@@ -149,20 +150,21 @@ mod test {
 		let color = &[255, 255, 255, 255];
 
 		viewport.draw_point((-1.0, -1.0, -1.0), color);
+		viewport.draw_point((1.0, 1.0, 1.0), color);			// will be ignored
 		viewport.draw_point((0.0, 0.0, 0.0), color);
-		// TODO add overriden point
+		viewport.draw_point((0.0, 0.0, 0.5), color);			// will override the previous one
 		viewport.draw_point((-0.25, 0.25, 0.25), color);
+		viewport.draw_point((-0.25, 0.25, -0.25), color);		// will not override the previous
 
 		assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 }); 
-		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 5000 }); 
+		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 7500 }); 
 		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 6250 }); 
 	}
 
 	#[test]
 	#[should_panic]
-	fn invalid_draw_point() {
-		let mut viewport = Viewport::new(640 as u32, 480 as u32);
-		viewport.draw_point((-2.0, 0.0, 0.0), &[0, 0, 0, 0]);
+	fn wrong_color() {
+		Viewport::new(640 as u32, 480 as u32).draw_point((0.0, 0.0, 0.0), &[0, 0, 0]);
 	}
 
 }
