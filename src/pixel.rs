@@ -2,11 +2,11 @@
 #[derive(Clone, Debug, PartialEq)]
 pub struct Pixel<'a> {
 	pub color: &'a [u8],
-	pub depth: f32
+	pub depth: usize
 }
 
 impl<'a> Default for Pixel<'a> {
     fn default() -> Self {
-        Self { color: &[0, 0, 0, 0], depth: f32::MIN }
+        Self { color: &[0, 0, 0, 0], depth: usize::MIN }
     }
 }

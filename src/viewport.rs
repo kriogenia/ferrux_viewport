@@ -5,7 +5,7 @@ use log::info;
 use crate::pixel::Pixel;
 use crate::{Color, PixelSize, Position};
 use crate::error::ViewportError;
-use crate::util::buffer_index;
+use crate::util::{ to_pixel, buffer_index };
 
 /// Entity in charge of offering the functions to draw on the screen and handle to logic of the operation.
 /// It works using three-dimensional normalized vectors of type (x: f32, y: f32, z: f32).
@@ -101,9 +101,15 @@ impl<'a, S: PixelSize> Viewport<'a, S> {
 	/// viewport.draw_point((0.0, 0.0, 0.0), &[255, 255, 255, 255]); // white point in the center of the screen
 	/// viewport.render(); // renders the point in the window
 	/// ```
-	pub fn draw_point(&mut self, (x, y, z): Position, color: &'a [u8]) {
+	pub fn draw_point(&mut self, position: Position, color: &'a [u8]) {
 		assert_eq!(4, color.len());
-		let i =buffer_index(x, y, usize::cast(self.width), usize::cast(self.height));
+		
+		// TODO check bounds
+		let (i, z) = {
+			let usize_width = usize::cast(self.width);
+			let (x, y, z) = to_pixel(position, usize_width, usize::cast(self.height));
+			(buffer_index(x, y, usize_width), z)
+		};
 		// TODO check depth with the current one
 		self.buffer[i] = Pixel {
 			color,
@@ -135,13 +141,14 @@ mod test {
 		let mut viewport = Viewport::new(640 as u32, 480 as u32);
 		let color = &[255, 255, 255, 255];
 
-		viewport.draw_point((-1.0, -1.0, 0.0), color);
+		viewport.draw_point((-1.0, -1.0, -1.0), color);
 		viewport.draw_point((0.0, 0.0, 0.0), color);
-		viewport.draw_point((-0.25, 0.25, 0.0), color);
+		// TODO add overriden point
+		viewport.draw_point((-0.25, 0.25, 0.25), color);
 
-		assert_eq!(viewport.buffer[0], Pixel { color, depth: 0.0 }); 
-		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 0.0 }); 
-		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 0.0 }); 
+		assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 }); 
+		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 5000 }); 
+		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 6250 }); 
 	}
 
 }
