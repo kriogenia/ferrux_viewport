@@ -1,12 +1,14 @@
 //! Package containing the viewport logic
 
-use log::info;
+mod factory;
+pub use factory::ViewportFactory;
 
 use crate::pixel::Pixel;
 use crate::render::{Render, Resize};
-use crate::{Color, PixelSize, Position, Voxel};
+use crate::{PixelSize, Position, Voxel};
 use crate::error::ViewportError;
 use crate::util::{ to_pixel, buffer_index };
+use log::info;
 
 /// Entity in charge of offering the functions to draw on the screen and handle to logic of the operation.
 /// It works using three-dimensional normalized vectors of type (x: f32, y: f32, z: f32).
@@ -25,14 +27,7 @@ pub struct Viewport<'a, S, R> {
 	width: S,
 	height: S,
 	buffer: Vec<Pixel<'a>>,
-	renderer: R,
-	// TODO add renderer
-	//		trait renderer receiving the buffer
-	//			winit renderer
-	//			mock renderer -> inside #[cfg(test)] module	
-	//		property
-	//			Box<dyn Renderer> or <R: Renderer>	
-	//		viewport factory to build the winit factory		
+	renderer: R,	
 }
 
 impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
@@ -42,13 +37,9 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// # Arguments
 	/// * `width`. Width in pixels of the screen, must be an unsigned value.
 	/// * `height`. Height in pixels of the screen, must be an unsigned value.
+	/// * `renderer`: Renderer to draw on
 	/// 
-	/// # Example
-	/// ```no_build
-	/// let viewport = ferrux_viewport::viewport::Viewport::new(640 as u32, 480 as u32);
-	/// ```
-	/// 
-	pub/*(crate)*/ fn new(width: S, height: S, renderer: R) -> Self {
+	pub(crate) fn new(width: S, height: S, renderer: R) -> Self {
 		assert!(width > S::zero());
 		assert!(height > S::zero());
 		
@@ -79,7 +70,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 		if i < self.buffer.len() && z >= self.buffer[i].depth {
 			self.buffer[i] = Pixel {
 				color,
-				depth: z		
+				depth: z
 			};
 		}
 	}
@@ -93,9 +84,10 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// so the expectation is a &[u8; 4] color like `&[255, 0, 0, 255]` for red with 100% opacity.
 	/// 
 	/// # Example
-	/// ```no_build
-	/// # use ferrux_viewport::viewport::Viewport;
-	/// # let mut viewport = Viewport::new(640 as u32, 480 as u32);
+	/// ```no_run
+	/// # let event_loop = winit::event_loop::EventLoop::new();
+	/// # let window = winit::window::Window::new(&event_loop).unwrap();
+	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window).unwrap();
 	/// viewport.draw_point((0.0, 0.0, 0.0), &[255, 255, 255, 255]); // white point in the center of the screen
 	/// viewport.render(); // renders the point in the window
 	/// ```
@@ -109,18 +101,18 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	}
 	
 	/// TODO
-	pub fn draw_line(&mut self, start: Position, end: Position, color: Color) {
+	pub fn draw_line(&mut self, start: Position, end: Position, color: &[u8]) {
 		// bresenham between the points
 		// call push pixel for each given point
 	}
 	
 	/// TODO
-	pub fn draw_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: Color) {
+	pub fn draw_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: &[u8]) {
 		// draw line between each pair of points
 	}
 	
 	///TODO
-	pub fn fill_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: Color) {
+	pub fn fill_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: &[u8]) {
 		// sort vectors
 		// match
 			// * fill_flat_triangle topside
@@ -170,12 +162,11 @@ impl<'a, S: PixelSize, R: Render> Viewport<'a, S, R> {
 
 #[cfg(test)]
 mod test {
-	use crate::{pixel::Pixel, render::mock::MockRenderer};
-	use super::Viewport;
+	use crate::{pixel::Pixel, viewport::ViewportFactory};
 
 	#[test]
 	fn draw_point() {
-		let mut viewport = Viewport::new(640 as u32, 480 as u32, MockRenderer {});
+		let mut viewport = ViewportFactory::test(640, 480);
 		let color = &[255, 255, 255, 255];
 
 		viewport.draw_point((-1.0, -1.0, -1.0), color);
@@ -193,7 +184,7 @@ mod test {
 	#[test]
 	#[should_panic]
 	fn wrong_color() {
-		Viewport::new(640 as u32, 480 as u32, MockRenderer {}).draw_point((0.0, 0.0, 0.0), &[0, 0, 0]);
+		ViewportFactory::test(640, 480).draw_point((0.0, 0.0, 0.0), &[0, 0, 0]);
 	}
 
 }

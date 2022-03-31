@@ -13,7 +13,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let event_loop = winit::event_loop::EventLoop::new();
 //! let window = winit::window::Window::new(&event_loop)?;
-//! //let viewport = ferrux_viewport::viewport::Viewport::new(&window)?;
+//! let viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window)?;
 //! # Ok(())}
 //! ```
 //!
@@ -22,37 +22,36 @@
 //!
 //! * Use the drawing functions like [`draw_line`] and [`draw_triangle`].
 //! * Call the [`render`] method to print it on screen.
-//! * Use [`reset_buffer`] to clear the current buffer and draw a new frame.
+//! * Use [`reset`] to clear the current buffer and draw a new frame.
 //!
 //! The following example takes the [`Viewport`] we built and draws a morphing triangle.
 //! ```no_run
-//! //use ferrux_viewport::viewport::Viewport;
-//! //use winit::event::Event;
+//! # use winit::event::Event;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
-//! //let event_loop = winit::event_loop::EventLoop::new();
-//! //let window = winit::window::Window::new(&event_loop)?;
-//! //let mut viewport = ferrux_viewport::viewport::Viewport::new(&window)?;
-//! //let mut x: i32 = 1;
-//! //let mut incrementing = true;
-//!//
-//! //event_loop.run(move |event, _, control_flow| {
-//! //  match event {
-//! //    Event::MainEventsCleared => {
-//! //      window.request_redraw();
-//! //    }
-//! //    Event::RedrawRequested(_) => {
-//! //      if !(1..100).contains(&x) {
-//! //        incrementing = !incrementing;
-//! //      }
-//! //      x += if incrementing { 1 } else { -1 };
-//! //      canvas.draw_triangle((100, (100 - x) as u32), (100 - x as u32, 100),
+//! # let event_loop = winit::event_loop::EventLoop::new();
+//! # let window = winit::window::Window::new(&event_loop)?;
+//! # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window)?;
+//! let mut x: i32 = 1;
+//! let mut incrementing = true;
+//! 
+//! event_loop.run(move |event, _, control_flow| {
+//!   match event {
+//!     Event::MainEventsCleared => {
+//!       window.request_redraw();
+//!     }
+//!     Event::RedrawRequested(_) => {
+//!       if !(1..100).contains(&x) {
+//!         incrementing = !incrementing;
+//!       }
+//!       x += if incrementing { 1 } else { -1 };
+//! //      viewport.draw_triangle((100, (100 - x) as u32), (100 - x as u32, 100),
 //! //                           (200 - x as u32, 200 - x as u32), palette::WHITE);
-//! //      canvas.render().unwrap();
-//! //      canvas.reset_frame();
-//! //    }
-//! //    _ => (),
-//! //  }
-//! //});
+//!       viewport.render().expect("render failed");
+//!       viewport.reset();
+//!     }
+//!     _ => (),
+//!   }
+//! });
 //! # Ok(()) }
 //! ```
 //!
@@ -60,20 +59,21 @@
 //! [`draw_triangle`]: viewport::Viewport::draw_triangle
 //! [`EventLoop`]: winit::event_loop::EventLoop
 //! [`render`]: viewport::Viewport::render
-//! [`reset_buffer`]: viewport::Viewport::reset_buffer
+//! [`reset`]: viewport::Viewport::reset
 //! [`Viewport`]: viewport::Viewport
 //! [`Window`]: winit::window::Window
 //! [`winit`]: winit
 //!
-#![allow(clippy::pedantic)]
 
-use num_traits::{NumAssignOps, NumOps, Unsigned, NumCast};
+#![allow(clippy::pedantic)]
 
 extern crate winit;
 
+use num_traits::{NumAssignOps, NumOps, Unsigned, NumCast};
+
+pub mod error;
 pub mod render;
 pub mod viewport;
-mod error;
 mod pixel;
 mod util;
 
@@ -88,5 +88,3 @@ pub trait PixelSize: Unsigned + NumAssignOps + NumOps + NumCast + Copy + Ord  {
     }
 }
 impl<T: Unsigned + NumAssignOps + NumOps + NumCast + Copy + Ord> PixelSize for T {}
-
-type Color<'a> = &'a [u8];
