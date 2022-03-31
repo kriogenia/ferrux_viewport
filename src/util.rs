@@ -17,12 +17,14 @@ pub fn buffer_index(w: usize, h: usize, width: usize) -> usize {
 	h * width + w
 }
 
+#[cfg(test)]
 macro_rules! converts_to {
 	($from:tt -> $to:tt) => {
 		assert_eq!($to, to_pixel($from, 640, 480));	
 	};
 }
 
+#[cfg(test)]
 macro_rules! is_indexed_in {
 	($w:literal, $h:literal with $width:literal has index $i:tt) => {
 		assert_eq!($i, buffer_index($w, $h, $width));

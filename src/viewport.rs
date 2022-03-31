@@ -155,7 +155,7 @@ impl<'a, S: PixelSize, R: Resize<S>> Viewport<'a, S, R> {
 }
 
 impl<'a, S: PixelSize, R: Render> Viewport<'a, S, R> {
-	/// TODO	
+	/// TODO
 	pub fn render(&mut self) -> Result<(), ViewportError> {
 		self.renderer.render(&self.buffer)
 	}

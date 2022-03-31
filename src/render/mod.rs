@@ -8,7 +8,7 @@ pub(crate) mod mock;
 pub use self::winit::WinitRenderer;
 
 pub trait Render {
-	fn render(&mut self, buffer: &Vec<Pixel>) -> Result<(), ViewportError>;
+	fn render(&mut self, buffer: &[Pixel]) -> Result<(), ViewportError>;
 	fn clear(&mut self) -> Result<(), ViewportError>;
 }
 

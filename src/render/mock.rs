@@ -7,7 +7,7 @@ pub struct MockRenderer {
 }
 
 impl Render for MockRenderer {
-    fn render(&mut self, buffer: &Vec<Pixel>) -> Result<(), crate::error::ViewportError> {
+    fn render(&mut self, buffer: &[Pixel]) -> Result<(), crate::error::ViewportError> {
         todo!()
     }
 
