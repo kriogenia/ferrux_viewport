@@ -17,10 +17,11 @@ fn main() -> Result<(), ViewportError> {
 		.unwrap()
     };
 
-	let mut viewport = ViewportFactory::winit(&window)?;
+	let mut viewport = ViewportFactory::winit(&window, 100)?;
 
 	assert_eq!(960, viewport.width());
 	assert_eq!(720, viewport.height());
+	assert_eq!(100, viewport.depth());
 	
 	let color = [RGBA8::new(255, 255, 255, 255)];
 	viewport.draw_line((0.0, 0.5, 0.0), (0.5, 0.0, -0.5), color.as_bytes());

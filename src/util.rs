@@ -1,15 +1,11 @@
-use line_drawing::SignedNum;
-
 use crate::{Position, Voxel};
-
-const DEPTH: f32 = 10_000.0;
 
 /// Converts the normalized position into the pixel equivalent in the given screen
 #[inline]
-pub fn to_pixel((x, y, z): Position, width: usize, height: usize) -> Voxel<usize> {
+pub fn to_pixel((x, y, z): Position, (width, height, depth): (usize, usize, usize)) -> Voxel<usize> {
 	let w = (x + 1.0) * 0.5 * (width as f32);
 	let h = (y + 1.0) * 0.5 * (height as f32);
-	let d = (z + 1.0) * 0.5 * DEPTH;
+	let d = (z + 1.0) * 0.5 * (depth as f32);
 	(w as usize, h as usize, d as usize)
 }
 
@@ -28,7 +24,7 @@ pub fn buffer_index(w: usize, h: usize, width: usize) -> usize {
 #[cfg(test)]
 macro_rules! converts_to {
 	($from:tt -> $to:tt) => {
-		assert_eq!($to, to_pixel($from, 640, 480));	
+		assert_eq!($to, to_pixel($from, (640, 480, 100)));	
 	};
 }
 
@@ -42,9 +38,9 @@ macro_rules! is_indexed_in {
 #[test]
 fn to_pixel_test() {
 	converts_to!((-1.0, -1.0, -1.0) -> (0, 0, 0));							// Mininum
-	converts_to!((0.0, 0.0, 0.0)    -> (320, 240, 5000));					// Middle
-	converts_to!((1.0, 1.0, 1.0)    -> (640, 480, 10000));					// Maximum
-	converts_to!((-0.25, 0.2, 0.6)  -> (240, 288, 8000));							// Random
+	converts_to!((0.0, 0.0, 0.0)    -> (320, 240, 50));					// Middle
+	converts_to!((1.0, 1.0, 1.0)    -> (640, 480, 100));					// Maximum
+	converts_to!((-0.25, 0.2, 0.6)  -> (240, 288, 80));							// Random
 }
 
 #[test]

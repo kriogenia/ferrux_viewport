@@ -25,22 +25,22 @@ impl ViewportFactory {
 	/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 	/// let event_loop = winit::event_loop::EventLoop::new();
 	/// let window = winit::window::Window::new(&event_loop)?;
-	/// let viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window)?;
+	/// let viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100)?;
 	/// # Ok(())}
 	/// ``` 
 	/// 
 	/// [`EventLoop`]: winit::event_loop::EventLoop
 	/// [`Window`]: winit::window::Window
 	///
-	pub fn winit<'a>(window: &Window) -> Result<Viewport<'a, u32, render::WinitRenderer>, ViewportError> {
+	pub fn winit<'a>(window: &Window, depth: u32) -> Result<Viewport<'a, u32, render::WinitRenderer>, ViewportError> {
 		let renderer = render::WinitRenderer::new(window)?;
 		let size = window.inner_size();
-		Ok(Viewport::new(size.width, size.height, renderer))
+		Ok(Viewport::new(size.width, size.height, depth, renderer))
 	}
 
 	#[cfg(test)]
-	pub fn test<'a>(width: u32, height: u32) -> Viewport<'a, u32, render::mock::MockRenderer> {
-		Viewport::new(width, height, render::mock::MockRenderer {})
+	pub fn test<'a>(width: u32, height: u32, depth: u32) -> Viewport<'a, u32, render::mock::MockRenderer> {
+		Viewport::new(width, height, depth, render::mock::MockRenderer {})
 	}
 
 }

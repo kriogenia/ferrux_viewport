@@ -27,6 +27,7 @@ use log::info;
 pub struct Viewport<'a, S, R> {
 	width: S,
 	height: S,
+	depth: S,
 	buffer: Vec<Pixel<'a>>,
 	renderer: R,	
 }
@@ -38,17 +39,20 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// # Arguments
 	/// * `width`. Width in pixels of the screen, must be an unsigned value.
 	/// * `height`. Height in pixels of the screen, must be an unsigned value.
+	/// * `depth`. Depth to assume in the `z` axis calculations, must be an unsigned value.
 	/// * `renderer`: Renderer to draw on
 	/// 
-	pub(crate) fn new(width: S, height: S, renderer: R) -> Self {
+	pub(crate) fn new(width: S, height: S, depth: S, renderer: R) -> Self {
 		assert!(width > S::zero());
 		assert!(height > S::zero());
+		assert!(depth > S::zero());
 		
 		let buffer_size = usize::cast(width * height);
 		info!("Buffer size = {buffer_size:?}");
 		Viewport { 
 			width, 
 			height, 
+			depth,
 			buffer: vec![Pixel::default(); buffer_size],
 			renderer
 		}
@@ -62,6 +66,16 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// Returns the height of the current window
 	pub fn height(&self) -> S {
 		self.height
+	}
+
+	/// Returns the depth of the current window
+	pub fn depth(&self) -> S {
+		self.depth
+	}
+
+	/// Returns the sizes of the viewport in usize to use in the pixels calculation
+	fn sizes(&self) -> (usize, usize, usize) {
+		(usize::cast(self.width), usize::cast(self.height), usize::cast(self.depth))
 	}
 
 	/// Adds a pixel to the buffer. It also verifies the color array and throws a panic if it's not correct.
@@ -88,7 +102,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// ```no_run
 	/// # let event_loop = winit::event_loop::EventLoop::new();
 	/// # let window = winit::window::Window::new(&event_loop).unwrap();
-	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window).unwrap();
+	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100).unwrap();
 	/// viewport.draw_point((0.0, 0.0, 0.0), &[255, 255, 255, 255]); // white point in the center of the screen
 	/// viewport.render(); // renders the point in the window
 	/// ```
@@ -97,7 +111,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
 	/// 
 	pub fn draw_point(&mut self, position: Position, color: &'a [u8]) {
-		let voxel = to_pixel(position, usize::cast(self.width), usize::cast(self.height));
+		let voxel = to_pixel(position, self.sizes());
 		self.push_pixel(voxel, color);
 	}
 	
@@ -113,7 +127,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// ```no_run
 	/// # let event_loop = winit::event_loop::EventLoop::new();
 	/// # let window = winit::window::Window::new(&event_loop).unwrap();
-	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window).unwrap();
+	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100).unwrap();
 	/// viewport.draw_line((-0.5, -0.5, -0.5), (0.25, 0.5, 0.0), &[255, 255, 255, 255]);
 	/// viewport.render(); // renders the line in the window
 	/// ```
@@ -122,8 +136,8 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	/// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
 	/// 
 	pub fn draw_line(&mut self, start: Position, end: Position, color: &'a [u8]) {
-		let start = to_pixel(start, usize::cast(self.width), usize::cast(self.height));
-		let end = to_pixel(end, usize::cast(self.width), usize::cast(self.height));
+		let start = to_pixel(start, self.sizes());
+		let end = to_pixel(end, self.sizes());
 
 		for (x, y, z) in Bresenham3d::new(as_signed(start), as_signed(end)) {
 			self.push_pixel((x as usize, y as usize, z as usize), color);
@@ -190,7 +204,7 @@ mod test {
 
 	#[test]
 	fn draw_point() {
-		let mut viewport = ViewportFactory::test(640, 480);
+		let mut viewport = ViewportFactory::test(640, 480, 1000);
 		let color = &[255, 255, 255, 255];
 
 		viewport.draw_point((-1.0, -1.0, -1.0), color);
@@ -201,26 +215,26 @@ mod test {
 		viewport.draw_point((-0.25, 0.25, -0.25), color);		// will not override the previous
 
 		assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 }); 
-		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 7500 }); 
-		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 6250 }); 
+		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 750 }); 
+		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 625 }); 
 	}
 
 	#[test]
 	fn draw_line() {
-		let mut viewport = ViewportFactory::test(24, 24);
+		let mut viewport = ViewportFactory::test(24, 24, 10);
 		let color = &[255, 255, 255, 255];
 
 		viewport.draw_line((-0.25, -0.25, 0.0), (0.25, 0.25, 0.0), color);
 
 		for i in 0..7 {
-			assert_eq!(viewport.buffer[225 + i * 25], Pixel { color, depth: 5000 }); 	
+			assert_eq!(viewport.buffer[225 + i * 25], Pixel { color, depth: 5 }); 	
 		}
 	}
 
 	#[test]
 	#[should_panic]
 	fn wrong_color() {
-		ViewportFactory::test(640, 480).draw_point((0.0, 0.0, 0.0), &[0, 0, 0]);
+		ViewportFactory::test(640, 480, 10).draw_point((0.0, 0.0, 0.0), &[0, 0, 0]);
 	}
 
 }

@@ -13,7 +13,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let event_loop = winit::event_loop::EventLoop::new();
 //! let window = winit::window::Window::new(&event_loop)?;
-//! let viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window)?;
+//! let viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100)?;
 //! # Ok(())}
 //! ```
 //!
@@ -30,7 +30,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let event_loop = winit::event_loop::EventLoop::new();
 //! # let window = winit::window::Window::new(&event_loop)?;
-//! # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window)?;
+//! # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100)?;
 //! let mut x: i32 = 1;
 //! let mut incrementing = true;
 //! 
