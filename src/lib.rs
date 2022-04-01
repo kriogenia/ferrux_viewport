@@ -78,7 +78,7 @@ mod pixel;
 mod util;
 
 type Position = (f32, f32, f32);
-type Voxel = (usize, usize, usize);
+type Voxel<T> = (T, T, T);
 
 /// Trait to englobe unsigned integers to use as PixelSize in the Viewport construcion
 pub trait PixelSize: Unsigned + NumAssignOps + NumOps + NumCast + Copy + Ord  {

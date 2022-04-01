@@ -2,12 +2,13 @@
 
 mod factory;
 pub use factory::ViewportFactory;
+use line_drawing::Bresenham3d;
 
 use crate::pixel::Pixel;
 use crate::render::{Render, Resize};
 use crate::{PixelSize, Position, Voxel};
 use crate::error::ViewportError;
-use crate::util::{ to_pixel, buffer_index };
+use crate::util::{ to_pixel, buffer_index, as_signed };
 use log::info;
 
 /// Entity in charge of offering the functions to draw on the screen and handle to logic of the operation.
@@ -64,7 +65,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	}
 
 	/// Adds a pixel to the buffer. It also verifies the color array and throws a panic if it's not correct.
-	fn push_pixel(&mut self, (x, y, z): Voxel, color: &'a [u8]) {
+	fn push_pixel(&mut self, (x, y, z): Voxel<usize>, color: &'a [u8]) {
 		assert_eq!(4, color.len());
 		let i = buffer_index(x, y, usize::cast(self.width));
 		if i < self.buffer.len() && z >= self.buffer[i].depth {
@@ -76,7 +77,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	}
 
 	/// Commands the drawing of a point in the window. It will be rendered in the next call to [`Viewport::render`].
-	/// If thow points fall on the same pixel, the point with the lowest `z` will be ignored.
+	/// If two drawn points fall on the same pixel, the point with the lowest `z` will be ignored.
 	/// 
 	/// # Arguments
 	/// * `position`, coordinates of the point in `(f32, f32, f32)`.
@@ -100,10 +101,33 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 		self.push_pixel(voxel, color);
 	}
 	
-	/// TODO
-	pub fn draw_line(&mut self, start: Position, end: Position, color: &[u8]) {
-		// bresenham between the points
-		// call push pixel for each given point
+	/// Commands the drawing of a line in the window. It will be rendered in the next call to [`Viewport::render`].
+	/// 
+	/// # Arguments
+	/// * `start`, coordinates of the starting point of the line.
+	/// * `end`, coordinates of the ending point of the line.
+	/// * `color`, color of the line to draw. It should be provided as raw RGB values, alpha is included,
+	/// so the expectation is a &[u8; 4] color like `&[255, 0, 0, 255]` for red with 100% opacity.
+	/// 
+	/// # Example
+	/// ```no_run
+	/// # let event_loop = winit::event_loop::EventLoop::new();
+	/// # let window = winit::window::Window::new(&event_loop).unwrap();
+	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window).unwrap();
+	/// viewport.draw_line((-0.5, -0.5, -0.5), (0.25, 0.5, 0.0), &[255, 255, 255, 255]);
+	/// viewport.render(); // renders the line in the window
+	/// ```
+	/// 
+	/// # Panic
+	/// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
+	/// 
+	pub fn draw_line(&mut self, start: Position, end: Position, color: &'a [u8]) {
+		let start = to_pixel(start, usize::cast(self.width), usize::cast(self.height));
+		let end = to_pixel(end, usize::cast(self.width), usize::cast(self.height));
+
+		for (x, y, z) in Bresenham3d::new(as_signed(start), as_signed(end)) {
+			self.push_pixel((x as usize, y as usize, z as usize), color);
+		}
 	}
 	
 	/// TODO
@@ -179,6 +203,18 @@ mod test {
 		assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 }); 
 		assert_eq!(viewport.buffer[153920], Pixel { color, depth: 7500 }); 
 		assert_eq!(viewport.buffer[192240], Pixel { color, depth: 6250 }); 
+	}
+
+	#[test]
+	fn draw_line() {
+		let mut viewport = ViewportFactory::test(24, 24);
+		let color = &[255, 255, 255, 255];
+
+		viewport.draw_line((-0.25, -0.25, 0.0), (0.25, 0.25, 0.0), color);
+
+		for i in 0..7 {
+			assert_eq!(viewport.buffer[225 + i * 25], Pixel { color, depth: 5000 }); 	
+		}
 	}
 
 	#[test]

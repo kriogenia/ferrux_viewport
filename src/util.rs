@@ -1,14 +1,22 @@
+use line_drawing::SignedNum;
+
 use crate::{Position, Voxel};
 
 const DEPTH: f32 = 10_000.0;
 
 /// Converts the normalized position into the pixel equivalent in the given screen
 #[inline]
-pub fn to_pixel((x, y, z): Position, width: usize, height: usize) -> Voxel {
+pub fn to_pixel((x, y, z): Position, width: usize, height: usize) -> Voxel<usize> {
 	let w = (x + 1.0) * 0.5 * (width as f32);
 	let h = (y + 1.0) * 0.5 * (height as f32);
 	let d = (z + 1.0) * 0.5 * DEPTH;
 	(w as usize, h as usize, d as usize)
+}
+
+/// Converts the return type of [to_pixel] to allow it to work with the Bresenham crate
+#[inline]
+pub fn as_signed((x, y, z): Voxel<usize>) -> (isize, isize, isize) {
+	(x as isize, y as isize, z as isize)
 }
 
 /// Gets the relative pixel in the screen to the given coordinates
@@ -26,7 +34,7 @@ macro_rules! converts_to {
 
 #[cfg(test)]
 macro_rules! is_indexed_in {
-	($w:literal, $h:literal with $width:literal has index $i:tt) => {
+	($w:literal, $h:literal with $width:literal width has index $i:tt) => {
 		assert_eq!($i, buffer_index($w, $h, $width));
 	};
 }
@@ -41,8 +49,8 @@ fn to_pixel_test() {
 
 #[test]
 fn buffer_index_test() {
-	is_indexed_in!(0, 0 with 640 has index 0);
-	is_indexed_in!(320, 240 with 640 has index 153920);
-	is_indexed_in!(640, 479 with 640 has index (480 * 640));
-	is_indexed_in!(124, 213 with 640 has index 136444);
+	is_indexed_in!(0, 0 with 640 width has index 0);
+	is_indexed_in!(320, 240 with 640 width has index 153920);
+	is_indexed_in!(640, 479 with 640 width has index (480 * 640));
+	is_indexed_in!(124, 213 with 640 width has index 136444);
 }

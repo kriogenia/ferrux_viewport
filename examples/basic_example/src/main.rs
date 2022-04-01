@@ -23,8 +23,7 @@ fn main() -> Result<(), ViewportError> {
 	assert_eq!(720, viewport.height());
 	
 	let color = [RGBA8::new(255, 255, 255, 255)];
-	viewport.draw_point((0.0, 0.0, 0.0), color.as_bytes());
-
+	viewport.draw_line((0.0, 0.5, 0.0), (0.5, 0.0, -0.5), color.as_bytes());
 	viewport.render().unwrap();
 
 	// TODO change to event loop execution
