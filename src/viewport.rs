@@ -144,9 +144,29 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 		}
 	}
 	
-	/// TODO
-	pub fn draw_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: &[u8]) {
-		// draw line between each pair of points
+	/// Commands the drawing of a triangle in the window. It will be rendered in the next call to [`Viewport::render`].
+	/// 
+	/// # Arguments
+	/// * `point_a`, `point_b`, `point_c`. Coordinates of the points of the triangle.
+	/// * `color`, color of the line to draw. It should be provided as raw RGB values, alpha is included,
+	/// so the expectation is a &[u8; 4] color like `&[255, 0, 0, 255]` for red with 100% opacity.
+	/// 
+	/// # Example
+	/// ```no_run
+	/// # let event_loop = winit::event_loop::EventLoop::new();
+	/// # let window = winit::window::Window::new(&event_loop).unwrap();
+	/// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100).unwrap();
+	/// viewport.draw_triangle((0.0, 0.0, -0.5), (-0.5, 0.5, 0.0), (0.5, 0.5, 0.0), &[255, 255, 255, 255]);
+	/// viewport.render(); // renders the line in the window
+	/// ```
+	/// 
+	/// # Panic
+	/// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
+	/// 
+	pub fn draw_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: &'a [u8]) {
+		self.draw_line(point_a, point_b, color);
+		self.draw_line(point_b, point_c, color);
+		self.draw_line(point_c, point_a, color);
 	}
 	
 	///TODO
