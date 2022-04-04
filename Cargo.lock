@@ -91,6 +91,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
+name = "bresenham_zip"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfdd9130a31bba15b25219c95340a36203ace53f78b8a68cf52ca01eee9168be"
+dependencies = [
+ "line_drawing",
+]
+
+[[package]]
 name = "bumpalo"
 version = "3.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -361,6 +370,7 @@ dependencies = [
 name = "ferrux_viewport"
 version = "0.1.0"
 dependencies = [
+ "bresenham_zip",
  "env_logger",
  "line_drawing",
  "log",

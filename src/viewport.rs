@@ -2,13 +2,14 @@
 
 mod factory;
 pub use factory::ViewportFactory;
-use line_drawing::Bresenham3d;
 
 use crate::pixel::Pixel;
 use crate::render::{Render, Resize};
 use crate::{PixelSize, Position, Voxel};
 use crate::error::ViewportError;
-use crate::util::{ to_pixel, buffer_index, as_signed };
+use crate::util::{ to_pixel, buffer_index, as_signed, sort_vectors };
+use bresenham_zip::build_zip;
+use line_drawing::Bresenham3d;
 use log::info;
 
 /// Entity in charge of offering the functions to draw on the screen and handle to logic of the operation.
@@ -170,17 +171,29 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 	}
 	
 	///TODO
-	pub fn fill_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: &[u8]) {
-		// sort vectors
-		// match
-			// * fill_flat_triangle topside
-			// * fill_flat_triangle bottomside
-			// * fill_non_flat_triangle
-				// calculate intersection
-				// fill top side
-				// fill bottom side
+	pub fn fill_triangle(&mut self, point_a: Position, point_b: Position, point_c: Position, color: &'a [u8]) {
+		let point_a = as_signed(to_pixel(point_a, self.sizes()));
+		let point_b = as_signed(to_pixel(point_b, self.sizes()));
+		let point_c = as_signed(to_pixel(point_c, self.sizes()));
+
+		let (point_a, point_b, point_c) = sort_vectors(point_a, point_b, point_c);
+ 		match point_b {
+			(_, y, _) if y == point_c.1 => self.fill_flat_triangle(point_a, point_b, point_c, color),
+			(_, y, _) if y == point_a.1 => self.fill_flat_triangle(point_c, point_a, point_b, color),
+			_ => {
+				//let p4 = calculate_intersection(p3, p2, p1);
+				//self.fill_flat_triangle(p1, p2, p4, color.clone());
+				//self.fill_flat_triangle(p3, p2, p4, color);
+			}
+		}
 	}
-	
+
+	/// Uses BresenhamZip to push the pixels to draw and fill a flat Y triangle (top or bot)
+	fn fill_flat_triangle(&mut self, peak: Voxel<isize>, side_a: Voxel<isize>, side_b: Voxel<isize>, color: &'a [u8]) {
+		println!("The peak is {:?}", peak);
+		println!("The side is {:?} and {:?}", side_a, side_b);
+	}
+
 	/// TODO
 	pub fn reset(&mut self) {
 		// same as buffer creation

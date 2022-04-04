@@ -24,7 +24,8 @@ fn main() -> Result<(), ViewportError> {
 	assert_eq!(100, viewport.depth());
 	
 	let color = [RGBA8::new(255, 255, 255, 255)];
-	viewport.draw_triangle((0.0, 0.0, 0.0), (-0.5, 0.5, -0.5), (0.5, 0.5, 0.5), color.as_bytes());
+	//viewport.draw_triangle((0.0, 0.0, 0.0), (-0.5, 0.5, -0.5), (0.5, 0.5, 0.5), color.as_bytes());
+	viewport.fill_triangle((0.0, 0.0, 0.0), (-0.5, 0.5, -0.5), (0.5, 0.5, 0.5), color.as_bytes());
 	viewport.render().unwrap();
 
 	// TODO change to event loop execution

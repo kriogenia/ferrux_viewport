@@ -1,4 +1,5 @@
 use crate::{Position, Voxel};
+use core::cmp::Ordering::Equal;
 
 /// Converts the normalized position into the pixel equivalent in the given screen
 #[inline]
@@ -11,7 +12,7 @@ pub fn to_pixel((x, y, z): Position, (width, height, depth): (usize, usize, usiz
 
 /// Converts the return type of [to_pixel] to allow it to work with the Bresenham crate
 #[inline]
-pub fn as_signed((x, y, z): Voxel<usize>) -> (isize, isize, isize) {
+pub fn as_signed((x, y, z): Voxel<usize>) -> Voxel<isize> {
 	(x as isize, y as isize, z as isize)
 }
 
@@ -19,6 +20,15 @@ pub fn as_signed((x, y, z): Voxel<usize>) -> (isize, isize, isize) {
 #[inline]
 pub fn buffer_index(w: usize, h: usize, width: usize) -> usize {
 	h * width + w
+}
+
+/// Receives three points and returns them sorted by Y value.
+/// This is a method to ease the finding of the middle vector and both peaks when filling a triangle
+#[inline]
+pub fn sort_vectors(p1: Voxel<isize>, p2: Voxel<isize>, p3: Voxel<isize>) -> (Voxel<isize>, Voxel<isize>, Voxel<isize>) {
+	let mut points = [p1, p2, p3];
+	points.sort_by(|&a, &b| a.1.cmp(&b.1));
+	(points[2], points[1], points[0])
 }
 
 #[cfg(test)]
@@ -49,4 +59,11 @@ fn buffer_index_test() {
 	is_indexed_in!(320, 240 with 640 width has index 153920);
 	is_indexed_in!(640, 479 with 640 width has index (480 * 640));
 	is_indexed_in!(124, 213 with 640 width has index 136444);
+}
+
+#[test]
+fn sort_vectors_test() {
+	assert_eq!(((10, 10, 10), (5, 5, 5), (0, 0, 0)), sort_vectors((10, 10, 10), (5, 5, 5), (0, 0, 0)));
+	assert_eq!(((5, 10, 0), (10, 5, 0), (0, 0, 0)), sort_vectors((10, 5, 0), (5, 10, 0), (0, 0, 0)));
+	assert_eq!(((0, 10, 5), (10, 5, 0), (5, 0, 10)), sort_vectors((5, 0, 10), (10, 5, 0), (0, 10, 5)));
 }
