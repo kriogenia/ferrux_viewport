@@ -6,7 +6,7 @@ pub use factory::ViewportFactory;
 use crate::error::ViewportError;
 use crate::pixel::Pixel;
 use crate::render::{Render, Resize};
-use crate::util::{as_signed, buffer_index, sort_vectors, to_pixel};
+use crate::util::{as_signed, buffer_index, sort_vectors, to_pixel, calculate_intersection};
 use crate::{PixelSize, Position, Voxel};
 use bresenham_zip::build_zip;
 use line_drawing::Bresenham3d;
@@ -180,7 +180,25 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
         self.draw_line(point_c, point_a, color);
     }
 
-    ///TODO
+    /// Commands the drawing and filling of a triangle in the window. It will be rendered in the next call to [`Viewport::render`].
+    ///
+    /// # Arguments
+    /// * `point_a`, `point_b`, `point_c`. Coordinates of the points of the triangle.
+    /// * `color`, color of the line to draw. It should be provided as raw RGB values, alpha is included,
+    /// so the expectation is a &[u8; 4] color like `&[255, 0, 0, 255]` for red with 100% opacity.
+    ///
+    /// # Example
+    /// ```no_run
+    /// # let event_loop = winit::event_loop::EventLoop::new();
+    /// # let window = winit::window::Window::new(&event_loop).unwrap();
+    /// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100).unwrap();
+    /// viewport.fill_triangle((0.0, 0.0, -0.5), (-0.5, 0.5, 0.0), (0.5, 0.5, 0.0), &[255, 255, 255, 255]);
+    /// viewport.render(); // renders the line in the window
+    /// ```
+    ///
+    /// # Panic
+    /// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
+    ///
     pub fn fill_triangle(
         &mut self,
         point_a: Position,
@@ -201,9 +219,9 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
                 self.fill_flat_triangle(point_c, point_a, point_b, color)
             }
             _ => {
-                //let p4 = calculate_intersection(p3, p2, p1);
-                //self.fill_flat_triangle(p1, p2, p4, color.clone());
-                //self.fill_flat_triangle(p3, p2, p4, color);
+                let intersection = calculate_intersection(point_c, point_b, point_a);
+                self.fill_flat_triangle(point_a, point_b, intersection, color);
+                self.fill_flat_triangle(point_c, point_b, intersection, color);
             }
         }
     }
@@ -290,6 +308,36 @@ mod test {
             assert_eq!(viewport.buffer[225 + i * 25], Pixel { color, depth: 5 });
         }
     }
+
+	#[test]
+	fn draw_triangle() {
+		let mut viewport = ViewportFactory::test(16, 16, 10);
+        let color = &[255, 255, 255, 255];
+
+        viewport.draw_triangle((0.0, -0.25, 0.0), (-0.25, 0.0, 0.0), (0.25, 0.0, 0.0), color);
+
+		// Check points in each of the lines
+		assert_eq!(viewport.buffer[119], Pixel { color, depth: 5 });
+		assert_eq!(viewport.buffer[135], Pixel { color, depth: 5 });
+		assert_eq!(viewport.buffer[121], Pixel { color, depth: 5 });
+	}
+
+	#[test]
+	fn fill_triangle() {
+		let mut viewport = ViewportFactory::test(16, 16, 10);
+        let color = &[255, 255, 255, 255];
+
+        viewport.fill_triangle((0.0, -0.25, 0.0), (-0.25, 0.0, 0.0), (0.25, 0.0, 0.0), color);
+
+		// Check points in each of the lines
+		assert_eq!(viewport.buffer[119], Pixel { color, depth: 5 });
+		assert_eq!(viewport.buffer[135], Pixel { color, depth: 5 });
+		assert_eq!(viewport.buffer[121], Pixel { color, depth: 5 });
+
+		// Check point inside
+		assert_eq!(viewport.buffer[120], Pixel { color, depth: 5 });
+
+	}
 
     #[test]
     #[should_panic]

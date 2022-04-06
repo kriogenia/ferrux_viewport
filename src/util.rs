@@ -1,5 +1,4 @@
 use crate::{Position, Voxel};
-use core::cmp::Ordering::Equal;
 
 /// Converts the normalized position into the pixel equivalent in the given screen
 #[inline]
@@ -20,6 +19,19 @@ pub fn as_signed((x, y, z): Voxel<usize>) -> Voxel<isize> {
 #[inline]
 pub fn buffer_index(w: usize, h: usize, width: usize) -> usize {
 	h * width + w
+}
+
+/// Calculates the intersection between the three points over the line connecting top and bot having the
+/// same height as mid
+#[inline]
+pub fn calculate_intersection(top: Voxel<isize>, mid: Voxel<isize>, bot: Voxel<isize>) -> Voxel<isize> {
+	let diff_y_mid = mid.1 as f32 - top.1 as f32;
+	let diff_y_bot = bot.1 as f32 - top.1 as f32;
+	let diff_x = bot.0 as f32 - top.0 as f32;
+	let diff_z = bot.2 as f32 - top.2 as f32;
+	let x = top.0 as f32 + (diff_y_mid / diff_y_bot) * diff_x;
+	let z = top.2 as f32 + (diff_y_mid / diff_y_bot) * diff_z;
+	(x as isize, mid.1 as isize, z as isize)
 }
 
 /// Receives three points and returns them sorted by Y value.
@@ -66,4 +78,10 @@ fn sort_vectors_test() {
 	assert_eq!(((10, 10, 10), (5, 5, 5), (0, 0, 0)), sort_vectors((10, 10, 10), (5, 5, 5), (0, 0, 0)));
 	assert_eq!(((5, 10, 0), (10, 5, 0), (0, 0, 0)), sort_vectors((10, 5, 0), (5, 10, 0), (0, 0, 0)));
 	assert_eq!(((0, 10, 5), (10, 5, 0), (5, 0, 10)), sort_vectors((5, 0, 10), (10, 5, 0), (0, 10, 5)));
+}
+
+#[test]
+fn calculate_intersection_test() {
+	assert_eq!(calculate_intersection((4, 0, 2), (0, 2, 1), (0, 4, 4)), (2, 2, 3));
+	assert_eq!(calculate_intersection((4, 0, 2), (0, 2, 1), (8, 4, -2)), (6, 2, 0));
 }

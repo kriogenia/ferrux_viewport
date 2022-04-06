@@ -4,7 +4,7 @@
 //! 
 //! It is a new iteration and twist over my previous library [Ferrux Canvas](https://crates.io/crates/ferrux_canvas).
 //! This one works with coordinates on a [-1.0, 1.0] 3D space which makes the drawing easier as it can work with
-//! normalized vectors and allows the user of _layers_ based on the depth without previous check from the user.
+//! normalized vectors and allows the use of _layers_ based on the depth without previous check from the user.
 //!
 //! # Building a new viewport
 //! The [`Viewport`] requires a [`Window`] of [`winit`], which will need itself an [`EventLoop`] reference.
@@ -40,12 +40,7 @@
 //!       window.request_redraw();
 //!     }
 //!     Event::RedrawRequested(_) => {
-//!       if !(1..100).contains(&x) {
-//!         incrementing = !incrementing;
-//!       }
-//!       x += if incrementing { 1 } else { -1 };
-//! //      viewport.draw_triangle((100, (100 - x) as u32), (100 - x as u32, 100),
-//! //                           (200 - x as u32, 200 - x as u32), palette::WHITE);
+//!       viewport.draw_triangle((0.0, -0.25, 0.0), (-0.25, 0.25, 0.0), (0.25, 0.25, 0.0), &[255, 255, 255, 255]);
 //!       viewport.render().expect("render failed");
 //!       viewport.reset();
 //!     }
@@ -54,6 +49,16 @@
 //! });
 //! # Ok(()) }
 //! ```
+//! 
+//! ## Coloring
+//! All the library drawing operations request a color in the form of a &[u8; 4] (RGBA). This allows the library to be compatible
+//! with the different color crates (in the examples we use the `rgb` crate).
+//! 
+//! The array dimmension is not enforced at compilation time but a panic will be thrown if the provided value is not of length four.
+//! But this can probably change in the future, allowing to provide just RGB or single channels.
+//! 
+//! Even if we request the alpha, the crate currently **DOES NOT** have transparency as you expect it.
+//! You can use the alpha to play with the colors but they will always be mixed with the black background, not with whatever color could be behind.
 //!
 //! [`draw_line`]: viewport::Viewport::draw_line
 //! [`draw_triangle`]: viewport::Viewport::draw_triangle
