@@ -4,6 +4,7 @@ mod factory;
 pub use factory::ViewportFactory;
 
 use crate::error::ViewportError;
+
 use crate::pixel::Pixel;
 use crate::render::{Render, Resize};
 use crate::util::{as_signed, buffer_index, sort_vectors, to_pixel, calculate_intersection};
@@ -241,9 +242,9 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
         }
     }
 
-    /// TODO
-    pub fn reset(&mut self) {
-        // same as buffer creation
+    /// Resets the buffer clearing all its current content
+    pub fn reset_buffer(&mut self) {
+        self.buffer = vec![Pixel::default(); usize::cast(self.width) * usize::cast(self.height)];
     }
 }
 
@@ -336,7 +337,17 @@ mod test {
 
 		// Check point inside
 		assert_eq!(viewport.buffer[120], Pixel { color, depth: 5 });
+	}
 
+	#[test]
+	fn reset_buffer() {
+		let mut viewport = ViewportFactory::test(16, 16, 10);
+		let color = &[255, 255, 255, 255];
+        viewport.draw_point((-1.0, -1.0, -1.0), &[255, 255, 255, 255]);
+        assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 });
+
+		viewport.reset_buffer();
+        assert_eq!(viewport.buffer[0], Pixel::default());
 	}
 
     #[test]

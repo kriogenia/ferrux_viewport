@@ -42,7 +42,7 @@
 //!     Event::RedrawRequested(_) => {
 //!       viewport.draw_triangle((0.0, -0.25, 0.0), (-0.25, 0.25, 0.0), (0.25, 0.25, 0.0), &[255, 255, 255, 255]);
 //!       viewport.render().expect("render failed");
-//!       viewport.reset();
+//!       viewport.reset_buffer();
 //!     }
 //!     _ => (),
 //!   }
