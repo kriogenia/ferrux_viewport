@@ -1,3 +1,5 @@
+//! Package with the errors that can occur using the library
+
 use thiserror::Error;
 
 #[derive(Error, Debug)]

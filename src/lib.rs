@@ -24,23 +24,27 @@
 //! * Call the [`render`] method to print it on screen.
 //! * Use [`reset`] to clear the current buffer and draw a new frame.
 //!
-//! The following example takes the [`Viewport`] we built and draws a morphing triangle.
+//! The following example takes the [`Viewport`] we built and draws a red morphing triangle.
 //! ```no_run
 //! # use winit::event::Event;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let event_loop = winit::event_loop::EventLoop::new();
 //! # let window = winit::window::Window::new(&event_loop)?;
 //! # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100)?;
-//! let mut x: i32 = 1;
+//! let mut i = 0.0;
+//! let step = 0.05;
 //! let mut incrementing = true;
 //! 
 //! event_loop.run(move |event, _, control_flow| {
 //!   match event {
 //!     Event::MainEventsCleared => {
-//!       window.request_redraw();
+//!         i += if incrementing { step } else { -step };
+//!         if i >= 1.0 { incrementing = false } else if i <= 0.0 { incrementing = true }
+//!         window.request_redraw();
 //!     }
 //!     Event::RedrawRequested(_) => {
-//!       viewport.draw_triangle((0.0, -0.25, 0.0), (-0.25, 0.25, 0.0), (0.25, 0.25, 0.0), &[255, 255, 255, 255]);
+//!       viewport.fill_triangle((0.0, 0.0, -0.1), (0.0 + i, -0.5 * i/2.0, -0.2), (0.0 + i, -0.3 * i/2.0, -0.2), 
+//!         &[255, 0, 0, 255]);
 //!       viewport.render().expect("render failed");
 //!       viewport.reset_buffer();
 //!     }

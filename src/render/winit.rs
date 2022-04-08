@@ -6,6 +6,7 @@ use crate::{error::ViewportError, pixel::Pixel};
 
 use super::{Render, Resize};
 
+/// Renderer able to work with Winit's [Window]
 pub struct WinitRenderer {
     pixels: Pixels,
 }
