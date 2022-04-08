@@ -40,7 +40,7 @@ impl ViewportFactory {
 
 	#[cfg(test)]
 	pub fn test<'a>(width: u32, height: u32, depth: u32) -> Viewport<'a, u32, render::mock::MockRenderer> {
-		Viewport::new(width, height, depth, render::mock::MockRenderer {})
+		Viewport::new(width, height, depth, render::mock::MockRenderer::default())
 	}
 
 }

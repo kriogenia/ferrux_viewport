@@ -62,6 +62,6 @@ impl Render for WinitRenderer {
 
 impl Resize<u32> for WinitRenderer {
     fn resize(&mut self, width: u32, height: u32) {
-        todo!()
+        self.pixels.resize_surface(width, height);
     }
 }

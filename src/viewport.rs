@@ -265,7 +265,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
 }
 
 impl<'a, S: PixelSize, R: Resize<S>> Viewport<'a, S, R> {
-    /// Changes the size of the rendered window
+    /// Changes the size of the rendered window. Doing it will **reset the buffer**, clearing the current content.
     ///
     /// # Arguments
     /// * `width`. New width of the window.
@@ -274,8 +274,7 @@ impl<'a, S: PixelSize, R: Resize<S>> Viewport<'a, S, R> {
     pub fn resize(&mut self, width: S, height: S) {
         self.width = width;
         self.height = height;
-
-        // TODO resize buffer -> new and copy
+		self.reset_buffer();
         self.renderer.resize(width, height);
     }
 }
@@ -407,6 +406,31 @@ mod test {
         viewport.reset_buffer();
         assert_eq!(viewport.buffer[0], Pixel::default());
     }
+
+	#[test]
+	fn render() {
+		let mut viewport = ViewportFactory::test(16, 16, 10);
+        assert_eq!(viewport.renderer.render_calls, 0);
+		viewport.render().unwrap();
+        assert_eq!(viewport.renderer.render_calls, 1);
+	}
+
+	#[test]
+	fn clear() {
+		let mut viewport = ViewportFactory::test(16, 16, 10);
+        assert_eq!(viewport.renderer.clear_calls, 0);
+		viewport.clear_frame().unwrap();
+        assert_eq!(viewport.renderer.clear_calls, 1);
+	}
+
+	#[test]
+	fn resize_buffer() {
+		let mut viewport = ViewportFactory::test(16, 16, 10);
+		assert_eq!(viewport.buffer.len(), 16 * 16);
+		viewport.resize(32, 32);
+		assert_eq!(viewport.buffer.len(), 32 * 32);
+		assert_eq!(viewport.renderer.size, (32, 32));
+	}
 
     #[test]
     #[should_panic]
