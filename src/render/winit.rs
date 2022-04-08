@@ -49,7 +49,14 @@ impl Render for WinitRenderer {
     }
 
     fn clear(&mut self) -> Result<(), crate::error::ViewportError> {
-        todo!()
+        for pixel in self.pixels.get_frame().chunks_exact_mut(4) {
+			pixel.copy_from_slice(&[0, 0, 0, 0]);
+		}
+
+		self.pixels.render().map_err(|e| {
+			error!("pixels.render() failed: {:?}", e);
+			ViewportError::Rendering
+		})
     }
 }
 

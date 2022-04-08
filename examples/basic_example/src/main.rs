@@ -43,7 +43,7 @@ fn main() -> Result<(), ViewportError> {
 	viewport.draw_line((-1.0, 0.25, 0.0), (0.0, 0.0, 0.0), white.as_bytes());
 	
 	// Figure rendering
-	viewport.render().unwrap();
+	viewport.render()?;
 
 	// TODO change to event loop execution
 	sleep(Duration::MAX);
