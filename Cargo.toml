@@ -23,6 +23,7 @@ optimize = ["log/release_max_level_warn"]
 default = ["optimize"]
 
 [dependencies]
+bresenham_zip = "1.0.0"
 env_logger = "0.9"
 line_drawing = "1.0.0"
 log = "0.4"
@@ -30,3 +31,8 @@ num-traits = "0.2.14"
 pixels = "0.9"
 thiserror = "1.0.30"
 winit = "0.26"
+
+[workspace]
+members = [
+	"examples/*"
+]

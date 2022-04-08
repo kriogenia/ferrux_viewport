@@ -55,6 +55,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
+name = "basic_example"
+version = "0.1.0"
+dependencies = [
+ "ferrux_viewport",
+ "rgb",
+ "winit",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -80,6 +89,15 @@ name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
+
+[[package]]
+name = "bresenham_zip"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cfdd9130a31bba15b25219c95340a36203ace53f78b8a68cf52ca01eee9168be"
+dependencies = [
+ "line_drawing",
+]
 
 [[package]]
 name = "bumpalo"
@@ -352,6 +370,7 @@ dependencies = [
 name = "ferrux_viewport"
 version = "0.1.0"
 dependencies = [
+ "bresenham_zip",
  "env_logger",
  "line_drawing",
  "log",
@@ -962,6 +981,15 @@ name = "renderdoc-sys"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1382d1f0a252c4bf97dc20d979a2fdd05b024acd7c2ed0f7595d7817666a157"
+
+[[package]]
+name = "rgb"
+version = "0.8.32"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e74fdc210d8f24a7dbfedc13b04ba5764f5232754ccebfdf5fff1bad791ccbc6"
+dependencies = [
+ "bytemuck",
+]
 
 [[package]]
 name = "rustc-hash"
