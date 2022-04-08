@@ -64,7 +64,7 @@
 //! [`draw_triangle`]: viewport::Viewport::draw_triangle
 //! [`EventLoop`]: winit::event_loop::EventLoop
 //! [`render`]: viewport::Viewport::render
-//! [`reset`]: viewport::Viewport::reset
+//! [`reset`]: viewport::Viewport::reset_buffer
 //! [`Viewport`]: viewport::Viewport
 //! [`Window`]: winit::window::Window
 //! [`winit`]: winit

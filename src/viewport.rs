@@ -281,7 +281,7 @@ impl<'a, S: PixelSize, R: Resize<S>> Viewport<'a, S, R> {
 
 impl<'a, S: PixelSize, R: Render> Viewport<'a, S, R> {
     /// Renders the content of the buffer in the Window. 
-	/// It doesn't clear the buffer afterwards, to do that call [reset_buffer].
+	/// It doesn't clear the buffer afterwards, to do that call [Viewport::reset_buffer].
 	/// 
 	/// # Example
     /// ```no_run
@@ -312,10 +312,10 @@ impl<'a, S: PixelSize, R: Render> Viewport<'a, S, R> {
     /// # let window = winit::window::Window::new(&event_loop).unwrap();
     /// # let mut viewport = ferrux_viewport::viewport::ViewportFactory::winit(&window, 100).unwrap();
     /// viewport.fill_triangle((0.0, 0.0, -0.5), (-0.5, 0.5, 0.0), (0.5, 0.5, 0.0), &[255, 255, 255, 255]);
-    /// viewport.render()?; // renders the triangle in the window
-	/// viewport.clear_frame()?;	// renders an empty frame
+    /// viewport.render()?;         // renders the triangle in the window
+	/// viewport.clear_frame()?;    // renders an empty frame
 	/// viewport.fill_triangle((0.25, 0.75, -0.5), (-0.25, 0.25, 0.0), (0.25, 0.25, 0.0), &[255, 0, 0, 255]);
-	/// viewport.render()?;	// renders both triangles as the previous one was not deleted from the buffer
+	/// viewport.render()?;         // renders both triangles as the previous one was not deleted from the buffer
 	/// # Ok (())
 	/// # }
     /// ```
