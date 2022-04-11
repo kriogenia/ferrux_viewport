@@ -4,7 +4,7 @@ mod factory;
 pub use factory::ViewportFactory;
 
 /// [Viewport] for rendering with `winit`
-pub type WinitViewport<'a, S> = Viewport<'a, S, crate::render::WinitRenderer>; 
+pub type WinitViewport<S> = Viewport<S, crate::render::WinitRenderer>; 
 
 use crate::error::ViewportError;
 use crate::pixel::Pixel;
@@ -28,15 +28,15 @@ use log::info;
 /// * `x`: west -> east
 /// * `y`: north -> south
 /// * `z`: far -> near
-pub struct Viewport<'a, S, R> {
+pub struct Viewport<S, R> {
     width: S,
     height: S,
     depth: S,
-    buffer: Vec<Pixel<'a>>,
+    buffer: Vec<Pixel>,
     renderer: R,
 }
 
-impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
+impl<S: PixelSize, R> Viewport<S, R> {
     /// Builds a new Viewport to use.
     ///
     /// # Arguments
@@ -86,16 +86,16 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     }
 
     /// Adds a pixel to the buffer. It also verifies the color array and throws a panic if it's not correct.
-    fn push_pixel(&mut self, (x, y, z): Voxel<usize>, color: &'a [u8]) {
+    fn push_pixel<'a>(&mut self, (x, y, z): Voxel<usize>, color: &'a [u8]) {
         assert_eq!(4, color.len());
         let i = buffer_index(x, y, usize::cast(self.width));
         if i < self.buffer.len() && z >= self.buffer[i].depth {
-            self.buffer[i] = Pixel { color, depth: z };
+            self.buffer[i] = Pixel::new(color, z);
         }
     }
 
     /// Adds the pixels between two points to the buffer using the `push_pixel` function.
-    fn push_line(&mut self, start: Voxel<isize>, end: Voxel<isize>, color: &'a [u8]) {
+    fn push_line<'a>(&mut self, start: Voxel<isize>, end: Voxel<isize>, color: &'a [u8]) {
         for (x, y, z) in Bresenham3d::new(start, end) {
             self.push_pixel((x as usize, y as usize, z as usize), color);
         }
@@ -125,7 +125,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     /// # Panic
     /// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
     ///
-    pub fn draw_point(&mut self, position: Position, color: &'a [u8]) {
+    pub fn draw_point<'a>(&mut self, position: Position, color: &'a [u8]) {
         let voxel = to_pixel(position, self.sizes());
         self.push_pixel(voxel, color);
     }
@@ -154,7 +154,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     /// # Panic
     /// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
     ///
-    pub fn draw_line(&mut self, start: Position, end: Position, color: &'a [u8]) {
+    pub fn draw_line<'a>(&mut self, start: Position, end: Position, color: &'a [u8]) {
         let start = to_pixel(start, self.sizes());
         let end = to_pixel(end, self.sizes());
         self.push_line(as_signed(start), as_signed(end), color);
@@ -183,7 +183,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     /// # Panic
     /// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
     ///
-    pub fn draw_triangle(
+    pub fn draw_triangle<'a>(
         &mut self,
         point_a: Position,
         point_b: Position,
@@ -218,7 +218,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     /// # Panic
     /// Passing a color with the wrong number of members will throw a panic. It's required to have length four (R, G, B, A);
     ///
-    pub fn fill_triangle(
+    pub fn fill_triangle<'a>(
         &mut self,
         point_a: Position,
         point_b: Position,
@@ -246,7 +246,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     }
 
     /// Uses BresenhamZip to push the pixels to draw and fill a flat Y triangle (top or bot)
-    fn fill_flat_triangle(
+    fn fill_flat_triangle<'a>(
         &mut self,
         peak: Voxel<isize>,
         side_a: Voxel<isize>,
@@ -266,7 +266,7 @@ impl<'a, S: PixelSize, R> Viewport<'a, S, R> {
     }
 }
 
-impl<'a, S: PixelSize, R: Resize<S>> Viewport<'a, S, R> {
+impl<S: PixelSize, R: Resize<S>> Viewport<S, R> {
     /// Changes the size of the rendered window. Doing it will **reset the buffer**, clearing the current content.
     ///
     /// # Arguments
@@ -281,7 +281,7 @@ impl<'a, S: PixelSize, R: Resize<S>> Viewport<'a, S, R> {
     }
 }
 
-impl<'a, S: PixelSize, R: Render> Viewport<'a, S, R> {
+impl<S: PixelSize, R: Render> Viewport<S, R> {
     /// Renders the content of the buffer in the Window. 
 	/// It doesn't clear the buffer afterwards, to do that call [Viewport::reset_buffer].
 	/// 
@@ -342,9 +342,9 @@ mod test {
         viewport.draw_point((-0.25, 0.25, 0.25), color);
         viewport.draw_point((-0.25, 0.25, -0.25), color); // will not override the previous
 
-        assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 });
-        assert_eq!(viewport.buffer[153920], Pixel { color, depth: 750 });
-        assert_eq!(viewport.buffer[192240], Pixel { color, depth: 625 });
+        assert_eq!(viewport.buffer[0], Pixel::new(color, 0));
+        assert_eq!(viewport.buffer[153920], Pixel::new(color, 750));
+        assert_eq!(viewport.buffer[192240], Pixel::new(color, 625));
     }
 
     #[test]
@@ -355,7 +355,7 @@ mod test {
         viewport.draw_line((-0.25, -0.25, 0.0), (0.25, 0.25, 0.0), color);
 
         for i in 0..7 {
-            assert_eq!(viewport.buffer[225 + i * 25], Pixel { color, depth: 5 });
+            assert_eq!(viewport.buffer[225 + i * 25], Pixel { color: *color, depth: 5 });
         }
     }
 
@@ -372,9 +372,9 @@ mod test {
         );
 
         // Check points in each of the lines
-        assert_eq!(viewport.buffer[119], Pixel { color, depth: 5 });
-        assert_eq!(viewport.buffer[135], Pixel { color, depth: 5 });
-        assert_eq!(viewport.buffer[121], Pixel { color, depth: 5 });
+        assert_eq!(viewport.buffer[119], Pixel { color: *color, depth: 5 });
+        assert_eq!(viewport.buffer[135], Pixel { color: *color, depth: 5 });
+        assert_eq!(viewport.buffer[121], Pixel { color: *color, depth: 5 });
     }
 
     #[test]
@@ -390,12 +390,12 @@ mod test {
         );
 
         // Check points in each of the lines
-        assert_eq!(viewport.buffer[119], Pixel { color, depth: 5 });
-        assert_eq!(viewport.buffer[135], Pixel { color, depth: 5 });
-        assert_eq!(viewport.buffer[121], Pixel { color, depth: 5 });
+        assert_eq!(viewport.buffer[119], Pixel { color: *color, depth: 5 });
+        assert_eq!(viewport.buffer[135], Pixel { color: *color, depth: 5 });
+        assert_eq!(viewport.buffer[121], Pixel { color: *color, depth: 5 });
 
         // Check point inside
-        assert_eq!(viewport.buffer[120], Pixel { color, depth: 5 });
+        assert_eq!(viewport.buffer[120], Pixel { color: *color, depth: 5 });
     }
 
     #[test]
@@ -403,7 +403,7 @@ mod test {
         let mut viewport = ViewportFactory::test(16, 16, 10);
         let color = &[255, 255, 255, 255];
         viewport.draw_point((-1.0, -1.0, -1.0), &[255, 255, 255, 255]);
-        assert_eq!(viewport.buffer[0], Pixel { color, depth: 0 });
+        assert_eq!(viewport.buffer[0], Pixel { color: *color, depth: 0 });
 
         viewport.reset_buffer();
         assert_eq!(viewport.buffer[0], Pixel::default());

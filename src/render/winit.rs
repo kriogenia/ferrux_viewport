@@ -40,7 +40,7 @@ impl Render for WinitRenderer {
             .chunks_exact_mut(4)
             .zip(buffer.iter())
         {
-            pixel.copy_from_slice(color.color);
+            pixel.copy_from_slice(&color.color);
         }
 
         self.pixels.render().map_err(|e| {
