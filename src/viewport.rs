@@ -3,8 +3,10 @@
 mod factory;
 pub use factory::ViewportFactory;
 
-use crate::error::ViewportError;
+/// [Viewport] for rendering with `winit`
+pub type WinitViewport<'a, S> = Viewport<'a, S, crate::render::WinitRenderer>; 
 
+use crate::error::ViewportError;
 use crate::pixel::Pixel;
 use crate::render::{Render, Resize};
 use crate::util::{as_signed, buffer_index, calculate_intersection, sort_vectors, to_pixel};

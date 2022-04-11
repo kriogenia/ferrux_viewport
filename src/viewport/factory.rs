@@ -2,6 +2,8 @@ use winit::window::Window;
 use crate::error::ViewportError;
 use crate::{viewport::Viewport, render};
 
+use super::WinitViewport;
+
 /// Factory to build the viewports for the different window tools, currently it offers the following:
 /// 
 /// * `winit` to use with the [winit] crate
@@ -32,7 +34,7 @@ impl ViewportFactory {
 	/// [`EventLoop`]: winit::event_loop::EventLoop
 	/// [`Window`]: winit::window::Window
 	///
-	pub fn winit<'a>(window: &Window, depth: u32) -> Result<Viewport<'a, u32, render::WinitRenderer>, ViewportError> {
+	pub fn winit<'a>(window: &Window, depth: u32) -> Result<WinitViewport<'a, u32>, ViewportError> {
 		let renderer = render::WinitRenderer::new(window)?;
 		let size = window.inner_size();
 		Ok(Viewport::new(size.width, size.height, depth, renderer))
